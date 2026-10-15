@@ -1,0 +1,18 @@
+#!/bin/zsh
+emulate -L zsh
+setopt nounset pipefail
+
+ROOT="${0:A:h}"
+KNU="$HOME/work/KNU/KNU"
+
+for tool in zsh make brew; do
+    command -v "$tool" >/dev/null 2>&1 || exit 1
+done
+
+[[ -x "$KNU" ]] || exit 1
+
+trap 'exit 0' INT TERM
+
+while true; do
+    sleep 1
+done
