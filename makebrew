@@ -1,18 +1,45 @@
 #!/bin/zsh
 emulate -L zsh
-setopt nounset pipefail
+setopt errexit nounset pipefail
 
-ROOT="${0:A:h}"
-KNU="$HOME/work/KNU/KNU"
+usage() {
+  print 'MAKEBREW'
+  print 'Usage: makebrew {help|doctor|open|run|make} [arguments]'
+}
 
-for tool in zsh make brew; do
-    command -v "$tool" >/dev/null 2>&1 || exit 1
-done
+(( $# )) || { usage; exit 0; }
 
-[[ -x "$KNU" ]] || exit 1
+command_name="$1"
+shift
 
-trap 'exit 0' INT TERM
-
-while true; do
-    sleep 1
-done
+case "$command_name" in
+  help)
+    usage
+    ;;
+  doctor)
+    print 'MAKEBREW diagnostics'
+    for tool in zsh make; do
+      if command -v "$tool" >/dev/null 2>&1; then
+        print "PASS: $tool"
+      else
+        print "MISSING: $tool"
+      fi
+    done
+    ;;
+  open)
+    (( $# == 1 )) || { print -u2 'Expected one file'; exit 2; }
+    [[ -e "$1" ]] || { print -u2 'File not found'; exit 1; }
+    command open -- "$1"
+    ;;
+  run)
+    (( $# )) || { print -u2 'Missing program'; exit 2; }
+    exec "$@"
+    ;;
+  make)
+    exec make "$@"
+    ;;
+  *)
+    print -u2 "Unknown command: $command_name"
+    exit 2
+    ;;
+esac
